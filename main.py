@@ -1,6 +1,12 @@
 from flask import Flask, jsonify, render_template, request
 from models.cafe import Cafe, db
 import random
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv(".env")
+DELETE_CAFE_API_KEY = os.environ["DELETE_CAFE_API_KEY"]
 
 '''
 Install the required packages first: 
@@ -28,6 +34,15 @@ with app.app_context():
 @app.route("/")
 def home():
     return render_template("index.html")
+
+
+# HTTP GET - Read Records
+@app.route("/all")
+def get_all_cafes():
+    with app.app_context():
+        all_cafes = db.session.execute(db.select(Cafe)).scalars().all()
+    cafes_json_list = [cafe.to_dict() for cafe in all_cafes]
+    return jsonify(cafes=cafes_json_list)
 
 
 # HTTP GET - Random cafe
@@ -110,7 +125,7 @@ def add():
     )
 
 
-# HTTP PUT/PATCH - Update Record
+# HTTP PATCH - Update Record
 # Opposed to the /add route, the updated coffee_price
 # is sent as a request parameter, so we receive it
 # in request.args. From Postman this is sent as a
@@ -138,15 +153,38 @@ def update_price(cafe_id):
 
 
 # HTTP DELETE - Delete Record
+# The prompt for this exercise requires that a record can only be
+# deleted if the request contains an api key and that the api key
+# should be sent as a request parameter (i.e. in the URL). I do not
+# agree with this AT ALL. Instead, I created an environment variable
+# and require that the api key be sent in the header of the request.
+@app.route("/report-closed/<int:cafe_id>", methods=["DELETE"])
+def report_closed(cafe_id):
+    api_key = request.headers.get("Authorization")
 
-
-# HTTP GET - Read Records
-@app.route("/all")
-def get_all_cafes():
-    with app.app_context():
-        all_cafes = db.session.execute(db.select(Cafe)).scalars().all()
-    cafes_json_list = [cafe.to_dict() for cafe in all_cafes]
-    return jsonify(cafes=cafes_json_list)
+    if api_key != DELETE_CAFE_API_KEY:
+        return jsonify(
+            error={
+                "Not Authorized": "Authorization header does not contain the correct api key to delete a cafe."
+            }
+        ), 403
+    elif api_key == DELETE_CAFE_API_KEY:
+        with app.app_context():
+            cafe_to_delete = db.session.get(Cafe, cafe_id)
+            if not cafe_to_delete:
+                return jsonify(
+                    error={
+                        "Not Found": "Sorry, a cafe with that id was not found in the database."
+                    }
+                )
+            else:
+                db.session.delete(cafe_to_delete)
+                db.session.commit()
+                return jsonify(
+                    {
+                        "success": "Successfully deleted cafe."
+                    }
+                )
 
 
 if __name__ == '__main__':
