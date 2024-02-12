@@ -64,8 +64,22 @@ def add():
         }
     )
 
-# HTTP PUT/PATCH - Update Record
 
+# HTTP PUT/PATCH - Update Record
+# Opposed to the /add route, the updated coffee_price
+# is sent as a request parameter, so we receive it
+# in request.args.
+@app.route("/update-price/<int:cafe_id>", methods=["PATCH"])
+def update_price(cafe_id):
+    with app.app_context():
+        cafe_to_update = db.get_or_404(Cafe, cafe_id)
+        cafe_to_update.coffee_price = request.args.get("new_price")
+        db.session.commit()
+    return jsonify(
+        {
+            "success": "Successfully updated the price."
+        }
+    )
 # HTTP DELETE - Delete Record
 
 
