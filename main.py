@@ -68,18 +68,28 @@ def add():
 # HTTP PUT/PATCH - Update Record
 # Opposed to the /add route, the updated coffee_price
 # is sent as a request parameter, so we receive it
-# in request.args.
+# in request.args. From Postman this is sent as a
+# PATCH request. This route will not work in a browser
+# unless you add "GET" to the route's methods parameter
 @app.route("/update-price/<int:cafe_id>", methods=["PATCH"])
 def update_price(cafe_id):
+    new_price = request.args.get("new_price")
     with app.app_context():
-        cafe_to_update = db.get_or_404(Cafe, cafe_id)
-        cafe_to_update.coffee_price = request.args.get("new_price")
-        db.session.commit()
-    return jsonify(
-        {
-            "success": "Successfully updated the price."
-        }
-    )
+        cafe_to_update = db.session.get(Cafe, cafe_id)
+        if not cafe_to_update:
+            return jsonify(
+                error={
+                    "Not Found": "Sorry, a cafe with that id was not found in the database."
+                }
+            ), 404  # Pass the error code. Otherwise, you'll still get a 200 OK response.
+        else:
+            cafe_to_update.coffee_price = new_price
+            db.session.commit()
+            return jsonify(
+                {
+                    "success": "Successfully updated the price."
+                }
+            ), 200  # Not necessary to pass the response code here, but I did it for consistency.
 # HTTP DELETE - Delete Record
 
 
