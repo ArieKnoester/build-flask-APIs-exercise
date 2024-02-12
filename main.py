@@ -35,6 +35,34 @@ def home():
 # HTTP GET - Read Record
 
 # HTTP POST - Create Record
+# Prompt specified that the request was sent from
+# Postman as 'x-www-form-urlencoded'.
+
+@app.route("/add", methods=["POST"])
+def add():
+    new_cafe = Cafe(
+        name=request.form["name"],
+        map_url=request.form["map_url"],
+        img_url=request.form["img_url"],
+        location=request.form["location"],
+        seats=request.form["seats"],
+        has_toilet=bool(int(request.form["has_toilet"])),
+        has_wifi=bool(int(request.form["has_wifi"])),
+        has_sockets=bool(int(request.form["has_sockets"])),
+        can_take_calls=bool(int(request.form["can_take_calls"])),
+        coffee_price=request.form["coffee_price"]
+    )
+    with app.app_context():
+        db.session.add(new_cafe)
+        db.session.commit()
+
+    return jsonify(
+        {
+            "response": {
+                "success": "Successfully added the new cafe."
+            }
+        }
+    )
 
 # HTTP PUT/PATCH - Update Record
 
