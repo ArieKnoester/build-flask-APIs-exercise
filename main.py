@@ -90,6 +90,8 @@ def update_price(cafe_id):
                     "success": "Successfully updated the price."
                 }
             ), 200  # Not necessary to pass the response code here, but I did it for consistency.
+
+
 # HTTP DELETE - Delete Record
 
 
@@ -139,11 +141,9 @@ def search():
 
         if not cafes_by_user_loc:
             return jsonify(
-                {
-                    "error": {
+                    error={
                         "Not Found": " Sorry, we don't have a cafe at that location"
                     }
-                }
             )
         else:
             cafes_by_user_loc_list = [cafe.to_dict() for cafe in cafes_by_user_loc]
