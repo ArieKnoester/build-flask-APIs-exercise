@@ -36,8 +36,8 @@ def home():
 
 # HTTP POST - Create Record
 # Prompt specified that the request was sent from
-# Postman as 'x-www-form-urlencoded'.
-
+# Postman as 'x-www-form-urlencoded', so we are
+# receiving this as form data and not request.args.
 @app.route("/add", methods=["POST"])
 def add():
     new_cafe = Cafe(
