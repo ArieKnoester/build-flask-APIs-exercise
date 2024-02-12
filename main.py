@@ -157,7 +157,8 @@ def update_price(cafe_id):
 # deleted if the request contains an api key and that the api key
 # should be sent as a request parameter (i.e. in the URL). I do not
 # agree with this AT ALL. Instead, I created an environment variable
-# and require that the api key be sent in the header of the request.
+# for this special api key and require that the api key be sent in the
+# # header of the request with the key, 'Authorization'.
 @app.route("/report-closed/<int:cafe_id>", methods=["DELETE"])
 def report_closed(cafe_id):
     api_key = request.headers.get("Authorization")
@@ -176,7 +177,7 @@ def report_closed(cafe_id):
                     error={
                         "Not Found": "Sorry, a cafe with that id was not found in the database."
                     }
-                )
+                ), 404
             else:
                 db.session.delete(cafe_to_delete)
                 db.session.commit()
@@ -184,7 +185,7 @@ def report_closed(cafe_id):
                     {
                         "success": "Successfully deleted cafe."
                     }
-                )
+                ), 200
 
 
 if __name__ == '__main__':
